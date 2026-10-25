@@ -1,0 +1,31 @@
+# Two containers: the vault (never exposed directly) and Caddy (public, automatic HTTPS certificates).
+services:
+  vault:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      TRUST_PROXY: "1"
+    volumes:
+      - vault-data:/data          # encrypted files + database
+      - ./backups:/backups        # target for the backup command (see README)
+    read_only: true               # container filesystem is immutable; only /data and /backups are writable
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    expose: ["3000"]
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [vault]
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+volumes:
+  vault-data:
+  caddy-data:
+  caddy-config:
