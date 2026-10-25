@@ -1,204 +1,795 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>Vault</title>
-<style>
-:root{--bg:#e9edf0;--sf:#fff;--ink:#17212b;--mut:#5b6b7a;--ln:#d3dae0;--ac:#1d5c63;--aci:#fff;--dg:#b3372f;--hv:#f2f5f7;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
-@media(prefers-color-scheme:dark){:root{--bg:#0f1519;--sf:#161e24;--ink:#e6ecf0;--mut:#8fa1af;--ln:#26323b;--ac:#5fb3b9;--aci:#0b1418;--dg:#ef7a70;--hv:#1b252d}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-variant-numeric:tabular-nums}[hidden]{display:none!important}
-button,input,select{font:inherit;color:inherit}button{cursor:pointer}
-:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-.btn{background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:7px 12px}.btn:hover{background:var(--hv)}
-.btn.pri{background:var(--ac);color:var(--aci);border-color:var(--ac);font-weight:600}.btn.dg{color:var(--dg)}.btn.sm{padding:3px 8px;font-size:13px}
-input[type=text],input[type=password],input[type=search],select{background:var(--sf);border:1px solid var(--ln);border-radius:6px;padding:8px 10px;width:100%}
-#lock{min-height:100vh;display:grid;place-items:center;padding:20px}
-.dial{width:min(380px,100%);text-align:center}
-.ring{width:132px;height:132px;margin:0 auto 18px;border-radius:50%;background:repeating-conic-gradient(var(--mut) 0 1deg,transparent 1deg 15deg);-webkit-mask:radial-gradient(circle,transparent 52px,#000 53px,#000 64px,transparent 65px);mask:radial-gradient(circle,transparent 52px,#000 53px,#000 64px,transparent 65px);position:relative}
-.dial h1{font:600 30px Georgia,"Times New Roman",serif;margin:0 0 4px}.dial p{color:var(--mut);margin:0 0 18px}
-.dial form{display:grid;gap:10px;text-align:left}.err{color:var(--dg);min-height:1.3em;font-size:14px}
-header.top{display:flex;gap:12px;align-items:center;padding:10px 16px;background:var(--sf);border-bottom:1px solid var(--ln);position:sticky;top:0;z-index:5}
-header.top b{font:600 19px Georgia,serif}#stats{color:var(--mut);font-size:13px;margin-left:auto}
-.wrap{max-width:1100px;margin:0 auto;padding:14px 16px 120px}
-.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}.bar .grow{flex:1;min-width:160px}
-.crumbs{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0 10px;color:var(--mut)}.crumbs button{background:none;border:0;color:var(--ac);padding:2px 4px;font-weight:600}
-table{width:100%;border-collapse:collapse;background:var(--sf);border:1px solid var(--ln);border-radius:8px;overflow:hidden}
-th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--ln);vertical-align:middle}th{font-size:13px;color:var(--mut);font-weight:600;white-space:nowrap}
-th button{background:none;border:0;font-weight:600;color:inherit;padding:0}tr:last-child td{border-bottom:0}tbody tr:hover{background:var(--hv)}
-.nm{background:none;border:0;padding:0;text-align:left;font-weight:600;max-width:46ch;overflow-wrap:anywhere}.sub{display:none;color:var(--mut);font-size:12px}
-.ext{display:inline-block;min-width:3.4em;text-align:center;border:1px solid var(--ln);border-radius:4px;font-size:12px;padding:1px 4px;color:var(--mut)}
-.act{white-space:nowrap;text-align:right}.empty{padding:40px 16px;text-align:center;color:var(--mut)}
-#sel{display:flex;gap:10px;align-items:center;padding:8px 12px;background:var(--ac);color:var(--aci);border-radius:6px;margin-bottom:10px}#sel .btn{color:var(--ink)}
-#up{position:fixed;right:14px;bottom:14px;width:min(420px,calc(100vw - 28px));background:var(--sf);border:1px solid var(--ln);border-radius:10px;box-shadow:0 6px 24px #0003;z-index:9}
-#uph{display:flex;gap:8px;align-items:center;padding:10px 12px;cursor:pointer}#uph span{flex:1;font-weight:600;font-size:14px}
-#upl{max-height:45vh;overflow:auto;border-top:1px solid var(--ln)}.it{padding:9px 12px;border-bottom:1px solid var(--ln)}.it:last-child{border-bottom:0}
-.it .r{display:flex;gap:8px;align-items:center}.it .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.it small{color:var(--mut)}.it small.err{color:var(--dg)}.r2{display:flex;gap:6px}
-progress{width:100%;height:8px;margin:6px 0 3px;accent-color:var(--ac)}
-#drop{position:fixed;inset:0;background:color-mix(in srgb,var(--ac) 82%,transparent);color:var(--aci);display:grid;place-items:center;font:600 26px Georgia,serif;z-index:20}
-dialog{border:1px solid var(--ln);border-radius:10px;background:var(--sf);color:var(--ink);width:min(400px,92vw);padding:18px}dialog::backdrop{background:#0008}
-dialog h3{margin:0 0 6px}dialog p{margin:0 0 12px;color:var(--mut);overflow-wrap:anywhere}dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
-#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:6px;z-index:30;max-width:90vw}
-dialog#set{width:min(560px,94vw);max-height:88vh;overflow:auto}.ss{border-top:1px solid var(--ln);padding:12px 0}.ss:first-child{border-top:0}.ss h3{margin:0 0 6px}pre{background:var(--hv);padding:10px;border-radius:6px;font-size:15px;user-select:all}dialog#set .it{padding:8px 0}
-@media(max-width:700px){.act{white-space:normal}.act .btn{display:block;margin:0 0 4px auto}.hm{display:none}.sub{display:block}th,td{padding:8px 6px}#stats{display:none}header.top{padding:8px 12px}}
-@media(prefers-reduced-motion:no-preference){.ring{animation:t 40s linear infinite}@keyframes t{to{transform:rotate(360deg)}}}
-</style></head><body>
-<main id="lock" hidden><div class="dial"><div class="ring"></div><h1>Vault</h1><p id="lp">Enter your vault key.</p>
-<form id="lf" autocomplete="off"><input type="text" id="code" placeholder="Setup code (shown in the server console)" hidden>
-<input type="password" id="key" placeholder="Vault key" autocomplete="current-password" required><input type="password" id="key2" placeholder="Repeat vault key" hidden>
-<input type="text" id="otp" placeholder="6-digit code from your authenticator (or a backup code)" autocomplete="one-time-code" inputmode="numeric" hidden>
-<button class="btn pri" id="lb">Unlock</button><div class="err" id="le" role="alert"></div></form></div></main>
-<div id="app" hidden>
-<header class="top"><b>Vault</b><span id="stats"></span><button class="btn sm" id="setbtn">Settings</button><button class="btn sm" id="lockbtn">Lock now</button></header>
-<div class="wrap">
-<div class="bar"><input type="search" id="q" class="grow" placeholder="Search all files by name"><button class="btn" id="nf">New folder</button><button class="btn pri" id="ub">Upload files</button><input type="file" id="fi" multiple hidden></div>
-<div class="crumbs" id="crumbs"></div><div id="sel" hidden><span id="sc"></span><button class="btn sm" id="sz">Download as ZIP</button><button class="btn sm" id="sd">Delete selected</button><button class="btn sm" id="sx">Clear</button></div>
-<table><thead><tr><th><input type="checkbox" id="all" aria-label="Select all"></th><th><button data-s="name">Name</button></th><th class="hm"><button data-s="ext">Type</button></th><th><button data-s="size">Size</button></th><th class="hm"><button data-s="date">Added</button></th><th></th></tr></thead><tbody id="rows"></tbody></table>
-<div class="empty" id="empty" hidden>Nothing here yet. Drop files anywhere on this page, or choose Upload files.</div></div>
-<aside id="up" hidden><div id="uph"><span id="ups"></span><button class="btn sm" id="upc">Clear finished</button><button class="btn sm" id="upt" aria-label="Show or hide uploads">Hide</button></div><div id="upl"></div></aside></div>
-<dialog id="set"><div id="setb"></div><div class="row"><button class="btn" id="setx" type="button">Close</button></div></dialog>
-<div id="drop" hidden>Drop files to upload</div><div id="toast" hidden></div><dialog id="dlg"><form method="dialog" id="df"><h3 id="dt"></h3><p id="dm"></p><input type="text" id="di" hidden><div class="row"><button class="btn" value="x" type="button" id="dx">Cancel</button><button class="btn pri" id="dok"></button></div></form></dialog>
-<script>
-'use strict';
-const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const el=(t,p={},...k)=>{const e=document.createElement(t);for(const[a,v]of Object.entries(p)){if(a==='class')e.className=v;else if(a.startsWith('on'))e.addEventListener(a.slice(2),v);else if(v!==false&&v!=null)e.setAttribute(a,v===true?'':v)}for(const c of k.flat())if(c!=null)e.append(c);return e};
-const fmtSize=n=>{if(n<1024)return n+' B';const u=['KB','MB','GB','TB'];let i=-1;do{n/=1024;i++}while(n>=1024&&i<3);return n.toFixed(n<10?2:1)+' '+u[i]};
-const fmtDate=t=>new Date(t).toLocaleString([],{dateStyle:'medium',timeStyle:'short'});
-const fmtTime=s=>!isFinite(s)||s<=0?'':s<60?Math.ceil(s)+'s':s<3600?Math.ceil(s/60)+' min':(s/3600).toFixed(1)+' h';
-let toastT;const toast=m=>{const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,4000)};
-async function api(method,url,body){const o={method,headers:{'x-vault':'1'}};if(body!==undefined){o.headers['content-type']='application/json';o.body=JSON.stringify(body)}
- const r=await fetch(url,o);let j=null;try{j=await r.json()}catch{}
- if(r.status===401&&url!=='/api/login'&&url!=='/api/setup')showLock();
- if(!r.ok)throw Object.assign(new Error(j?.error||'Request failed ('+r.status+')'),{status:r.status,data:j});return j}
-function ask({title,msg='',input,ok='OK',danger,pw}){return new Promise(res=>{const d=$('#dlg'),i=$('#di');$('#dt').textContent=title;$('#dm').textContent=msg;$('#dok').textContent=ok;$('#dok').className='btn '+(danger?'dg':'pri');
- i.type=pw?'password':'text';i.hidden=input===undefined;if(input!==undefined)i.value=input;let v=null;
- $('#df').onsubmit=e=>{e.preventDefault();v=input===undefined?true:i.value;d.close()};$('#dx').onclick=()=>d.close();d.onclose=()=>res(v);d.showModal();if(!i.hidden)i.select()})}
-/* ---------- lock / setup ---------- */
-let CFGS={idle:900},mode='login';
-async function boot(){const s=await fetch('/api/state').then(r=>r.json());CFGS.idle=s.idleSeconds;mode=s.setup?'login':'setup';s.authed?enter():showLock()}
-function showLock(){$('#app').hidden=true;$('#lock').hidden=false;const s=mode==='setup';$('#code').hidden=$('#key2').hidden=!s;$('#key2').required=s;
- $('#lp').textContent=s?'First run: choose a long vault key (12+ characters). Without it nobody gets in, not even you.':'Enter your vault key.';$('#lb').textContent=s?'Create vault':'Unlock';
- $('#key').autocomplete=s?'new-password':'current-password';$('#key').value=$('#key2').value=$('#otp').value='';$('#otp').hidden=true;$('#le').textContent='';$('#key').focus();Uploads.pauseAll(true);if($('#set').open)$('#set').close()}
-$('#lf').addEventListener('submit',async e=>{e.preventDefault();const b=$('#lb'),er=$('#le');er.textContent='';b.disabled=true;
- try{if(mode==='setup'){if($('#key').value!==$('#key2').value)throw new Error('The two keys do not match.');await api('POST','/api/setup',{code:$('#code').value,key:$('#key').value});mode='login'}
-  else await api('POST','/api/login',{key:$('#key').value,code:$('#otp').hidden?undefined:$('#otp').value});$('#key').value=$('#key2').value=$('#otp').value='';enter()}
- catch(x){er.textContent=x.message;if(x.data?.need2fa){$('#otp').hidden=false;$('#otp').focus()}}finally{b.disabled=false}});
-let appOn=false;
-function enter(){$('#lock').hidden=true;$('#app').hidden=false;if(!appOn){appOn=true;load();}else load();Uploads.resumeAuto()}
-$('#lockbtn').addEventListener('click',async()=>{if(Uploads.active()&&!await ask({title:'Uploads are running',msg:'Locking now pauses them. You can resume after unlocking.',ok:'Lock anyway'}))return;await api('POST','/api/logout').catch(()=>{});showLock()});
-let lastAct=Date.now();['pointerdown','keydown','touchstart','mousemove'].forEach(ev=>addEventListener(ev,()=>lastAct=Date.now(),{passive:true}));
-setInterval(()=>{if(!$('#app').hidden&&!Uploads.active()&&Date.now()-lastAct>CFGS.idle*1000-5000){api('POST','/api/logout').catch(()=>{});showLock()}},5000);
-setInterval(()=>{if(!$('#app').hidden&&Uploads.active())fetch('/api/state').catch(()=>{})},60000);
-/* ---------- file browser ---------- */
-const S={folder:null,sort:'date',dir:'desc',q:'',data:null,sel:new Set()};
-async function load(){try{const p=new URLSearchParams({sort:S.sort,dir:S.dir});if(S.folder)p.set('folder',S.folder);if(S.q)p.set('q',S.q);
- S.data=await api('GET','/api/list?'+p);S.sel.clear();draw();const st=await api('GET','/api/stats');
- $('#stats').textContent=`${st.files} files · ${fmtSize(st.bytes)} stored`+(st.diskFree!=null?` · ${fmtSize(st.diskFree)} free`:'')}
- catch(e){if(e.status===404){S.folder=null;load()}else if(e.status!==401)toast(e.message)}}
-function draw(){const d=S.data,tb=$('#rows');tb.replaceChildren();
- const cr=$('#crumbs');cr.replaceChildren(S.q?el('span',{},`Search results for "${S.q}"`):el('button',{onclick:()=>go(null)},'All files'));
- if(!S.q)d.breadcrumbs.forEach(b=>cr.append('/',el('button',{onclick:()=>go(b.id)},b.name)));
- for(const f of d.folders)tb.append(row('folder',f));for(const f of d.files)tb.append(row('file',f));
- $('#empty').hidden=d.folders.length+d.files.length>0;$('#empty').textContent=S.q?'No matches.':'Nothing here yet. Drop files anywhere on this page, or choose Upload files.';selUI()}
-function row(kind,f){const key=kind+':'+f.id,isF=kind==='folder';
- const cb=el('input',{type:'checkbox','aria-label':'Select '+f.name,onchange:e=>{e.target.checked?S.sel.add(key):S.sel.delete(key);selUI()}});cb.dataset.k=key;
- const nm=el('button',{class:'nm',onclick:()=>isF?go(f.id):dl(f)},(isF?'📁 ':'')+f.name);
- const sub=el('div',{class:'sub'},isF?`${f.items} items`:`${f.ext||'file'} · ${fmtSize(f.size)} · ${fmtDate(f.created)}`);
- const acts=el('td',{class:'act'},isF?null:el('button',{class:'btn sm',onclick:()=>dl(f)},'Download'),' ',isF?null:el('button',{class:'btn sm',onclick:()=>share(f)},'Share'),' ',el('button',{class:'btn sm',onclick:()=>rename(kind,f)},'Rename'),' ',el('button',{class:'btn sm dg',onclick:()=>del([key],f.name)},'Delete'));
- return el('tr',{},el('td',{},cb),el('td',{},nm,sub),el('td',{class:'hm'},isF?'':el('span',{class:'ext',title:f.mime},f.ext||'—')),el('td',{},isF?'':fmtSize(f.size)),el('td',{class:'hm'},isF?'':fmtDate(f.created)),acts)}
-function selUI(){$('#sel').hidden=!S.sel.size;$('#sc').textContent=S.sel.size+' selected';document.querySelectorAll('#rows input').forEach(c=>c.checked=S.sel.has(c.dataset.k));$('#all').checked=S.sel.size>0&&S.sel.size===document.querySelectorAll('#rows input').length}
-$('#all').addEventListener('change',e=>{document.querySelectorAll('#rows input').forEach(c=>e.target.checked?S.sel.add(c.dataset.k):S.sel.delete(c.dataset.k));selUI()});
-$('#sz').addEventListener('click',()=>{const k=[...S.sel],q=new URLSearchParams({files:k.filter(x=>x.startsWith('file:')).map(x=>x.slice(5)).join(','),folders:k.filter(x=>x.startsWith('folder:')).map(x=>x.slice(7)).join(',')});
- const a=el('a',{href:'/api/zip?'+q});document.body.append(a);a.click();a.remove()});
-async function share(f){const h=await ask({title:'Share "'+f.name+'"',msg:'Anyone who has the link can download this one file, without a key. For how many hours should the link work? (1 to 720)',input:'24',ok:'Create link'});if(!h)return;
- try{const r=await api('POST',`/api/files/${f.id}/share`,{hours:Number(h)});if(await ask({title:'Your link is ready',msg:'Copy it now. For safety it cannot be shown again. You can revoke it any time in Settings.',input:r.url,ok:'Copy link'}))navigator.clipboard?.writeText(r.url).then(()=>toast('Link copied')).catch(()=>toast('Select the link and copy it by hand'))}catch(e){toast(e.message)}}
-$('#sx').addEventListener('click',()=>{S.sel.clear();selUI()});$('#sd').addEventListener('click',()=>del([...S.sel],S.sel.size+' items'));
-const go=id=>{S.folder=id;S.q='';$('#q').value='';load()};
-const dl=f=>{const a=el('a',{href:`/api/files/${f.id}/download`,download:f.name});document.body.append(a);a.click();a.remove()};
-async function del(keys,label){if(!await ask({title:'Delete permanently?',msg:`${label} will be erased from the server. Folders include everything inside. This cannot be undone.`,ok:'Delete',danger:1}))return;
- try{await api('POST','/api/delete',{files:keys.filter(k=>k.startsWith('file:')).map(k=>k.slice(5)),folders:keys.filter(k=>k.startsWith('folder:')).map(k=>k.slice(7))});toast('Deleted');load()}catch(e){toast(e.message)}}
-async function rename(kind,f){const n=await ask({title:'Rename',input:f.name,ok:'Rename'});if(!n||n===f.name)return;try{await api('PATCH',`/api/${kind}s/${f.id}`,{name:n});load()}catch(e){toast(e.message)}}
-$('#nf').addEventListener('click',async()=>{const n=await ask({title:'New folder',input:'',ok:'Create folder'});if(!n)return;try{await api('POST','/api/folders',{name:n,parent:S.folder});load()}catch(e){toast(e.message)}});
-document.querySelectorAll('th button').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.s;S.dir=S.sort===k&&S.dir==='asc'?'desc':'asc';S.sort=k;load()}));
-let qt;$('#q').addEventListener('input',e=>{clearTimeout(qt);qt=setTimeout(()=>{S.q=e.target.value.trim();load()},250)});
-/* ---------- upload engine: queue, 3 parallel chunks, retry, pause/resume, progress ---------- */
-const Uploads=(()=>{const Q=[];let id=0,raf=0,wl=null,lastTick=Date.now();const FILES=2,PAR=3;
- const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
- const sentOf=it=>it.done+Object.values(it.part).reduce((a,b)=>a+b,0);
- const busy=it=>it.state==='uploading'||it.state==='verifying';
- const active=()=>Q.some(i=>busy(i)||i.state==='queued');
- function add(files){let n=0;for(const f of files){Q.push({id:++id,file:f,folder:S.folder,state:'queued',done:0,part:{},speed:0,last:0,xhrs:new Set(),paused:false,auto:false,note:'',err:''});n++}
-  if(n&&'Notification'in window&&Notification.permission==='default')Notification.requestPermission();pump();paint()}
- function pump(){let run=Q.filter(busy).length;for(const it of Q)if(run<FILES&&it.state==='queued'&&!it.paused){run++;go1(it)}
-  if(active()&&!wl&&navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>{wl=w;w.addEventListener('release',()=>wl=null)}).catch(()=>{});
-  if(!active()&&wl){wl.release();wl=null}}
- function xhrPut(it,n,buf,hash){return new Promise((res,rej)=>{const x=new XMLHttpRequest();it.xhrs.add(x);x.open('PUT',`/api/uploads/${it.up.id}/chunks/${n}`);x.setRequestHeader('x-vault','1');if(hash)x.setRequestHeader('x-chunk-sha256',hash);
-  x.upload.onprogress=e=>{it.part[n]=e.loaded;paint()};x.onload=()=>{it.xhrs.delete(x);if(x.status===200)return res();let m='Upload failed ('+x.status+')';try{m=JSON.parse(x.responseText).error||m}catch{}
-   if(x.status===401)showLock();rej(Object.assign(new Error(m),{fatal:x.status!==422&&x.status<500&&x.status!==429&&x.status!==408}))};
-  x.onerror=x.ontimeout=()=>{it.xhrs.delete(x);rej(new Error('Network problem'))};x.onabort=()=>{it.xhrs.delete(x);rej(Object.assign(new Error('aborted'),{aborted:true}))};x.send(buf)})}
- async function chunk(it,n){const s=n*it.cs,e=Math.min(it.file.size,s+it.cs),buf=await it.file.slice(s,e).arrayBuffer();let h=null;if(crypto.subtle)h=hex(await crypto.subtle.digest('SHA-256',buf));
-  for(let a=0;;a++){try{await xhrPut(it,n,buf,h);it.done+=e-s;delete it.part[n];it.note='';return}catch(x){it.part[n]=0;if(it.paused||it.cancelled||x.aborted)throw Object.assign(x,{aborted:true});if(x.fatal||a>=7)throw x;
-   it.note=`Connection problem, retrying (${a+1}/7)…`;paint();await sleep(Math.min(30000,1000*2**a));while(!navigator.onLine&&!it.paused)await sleep(1000)}}}
- async function go1(it){it.state='uploading';it.err='';it.last=Date.now();paint();
-  try{const up=await api('POST','/api/uploads',{name:it.file.name,size:it.file.size,folder:it.folder,fingerprint:`${it.file.name}|${it.file.size}|${it.file.lastModified}`});
-   it.up=up;it.cs=up.chunkSize;it.part={};it.done=0;const have=new Set(up.received),todo=[];
-   for(let n=0;n<up.total;n++){if(have.has(n))it.done+=Math.min(it.cs,it.file.size-n*it.cs);else todo.push(n)}
-   if(up.resumed&&have.size)it.note=`Resuming (${have.size}/${up.total} parts already on server)`;let fatal=null;
-   const w=async()=>{while(todo.length&&!fatal&&!it.paused&&!it.cancelled){const n=todo.shift();try{await chunk(it,n)}catch(x){if(x.aborted){todo.unshift(n);return}fatal=x;return}}};
-   await Promise.all(Array.from({length:PAR},w));
-   if(it.cancelled)return;if(it.paused){it.state='paused';return}if(fatal)throw fatal;
-   it.state='verifying';it.note='Checking integrity on the server…';paint();await api('POST',`/api/uploads/${up.id}/complete`,{});it.state='done';it.note='';it.done=it.file.size;it.part={}
-  }catch(x){if(!it.cancelled&&!it.paused){it.state='error';it.err=x.message}else if(it.paused&&it.state!=='done')it.state='paused'}
-  finally{pump();paint();if(it.state==='done')refresh();if(!active()&&Q.some(i=>i.state==='done')){document.title='Vault';if(document.hidden&&'Notification'in window&&Notification.permission==='granted')new Notification('Vault: uploads finished')}}}
- let rt;const refresh=()=>{clearTimeout(rt);rt=setTimeout(()=>{if(!$("#app").hidden)load()},200)};
- function pause(it,auto){it.paused=true;it.auto=!!auto;if(busy(it)){it.state='paused';[...it.xhrs].forEach(x=>x.abort())}else if(it.state==='queued')it.state='paused';paint()}
- function resume(it){it.paused=false;it.auto=false;if(it.state==='paused'||it.state==='error')it.state='queued';pump();paint()}
- function cancel(it){it.cancelled=true;[...it.xhrs].forEach(x=>x.abort());if(it.up&&it.state!=='done')api('DELETE','/api/uploads/'+it.up.id).catch(()=>{});Q.splice(Q.indexOf(it),1);pump();paint()}
- setInterval(()=>{const now=Date.now(),dt=(now-lastTick)/1000;lastTick=now;for(const it of Q){if(it.state==='uploading'){const s=sentOf(it);it.speed=it.speed?it.speed*.6+((s-(it.prev||0))/dt)*.4:(s-(it.prev||0))/dt;it.prev=s}else{it.speed=0;it.prev=sentOf(it)}}if(active())paint()},1000);
- addEventListener('offline',()=>{Q.filter(busy).forEach(i=>pause(i,true));toast('You are offline. Uploads are paused and resume automatically.')});
- addEventListener('online',()=>{Q.filter(i=>i.auto).forEach(resume);toast('Back online. Resuming uploads.')});
- addEventListener('beforeunload',e=>{if(active()){e.preventDefault();e.returnValue=''}});
- function paint(){if(!raf)raf=setTimeout(()=>{raf=0;paintNow()},200)}
- const nodes=new Map();
- function btns(it){const b=[];if(it.state==='uploading'||it.state==='queued')b.push(el('button',{class:'btn sm',onclick:()=>pause(it)},'Pause'));
-  if(it.state==='paused')b.push(el('button',{class:'btn sm',onclick:()=>resume(it)},'Resume'));if(it.state==='error')b.push(el('button',{class:'btn sm',onclick:()=>resume(it)},'Retry'));
-  if(it.state!=='done')b.push(el('button',{class:'btn sm dg',onclick:()=>cancel(it)},'Cancel'));return b}
- function paintNow(){$('#up').hidden=!Q.length;const L=$('#upl');for(const[k,nd]of nodes)if(!Q.some(i=>i.id===k)){nd.root.remove();nodes.delete(k)}
-  let tot=0,snt=0,spd=0,n=0;
-  for(const it of Q){let nd=nodes.get(it.id);
-   if(!nd){nd={root:el('div',{class:'it'}),nm:el('span',{class:'n',title:it.file.name},it.file.name),act:el('span',{class:'r2'}),pr:el('progress',{max:100,value:0,'aria-label':'Upload progress for '+it.file.name}),sm:el('small')};
-    nd.root.append(el('div',{class:'r'},nd.nm,nd.act),nd.pr,nd.sm);L.append(nd.root);nodes.set(it.id,nd)}
-   const s=sentOf(it),pct=it.file.size?Math.min(100,s/it.file.size*100):100;if(busy(it)||it.state==='queued'){tot+=it.file.size;snt+=s;spd+=it.speed;n++}
-   const st={queued:'Waiting…',uploading:`${pct.toFixed(0)}% · ${fmtSize(s)} of ${fmtSize(it.file.size)}${it.speed>1?` · ${fmtSize(it.speed)}/s · ${fmtTime((it.file.size-s)/it.speed)} left`:''}${it.note?' · '+it.note:''}`,verifying:it.note,paused:`Paused at ${pct.toFixed(0)}%`,done:`Done · ${fmtSize(it.file.size)}`,error:it.err}[it.state];
-   nd.pr.value=it.state==='done'?100:pct;nd.sm.textContent=st;nd.sm.className=it.state==='error'?'err':'';
-   if(nd.st!==it.state){nd.st=it.state;nd.act.replaceChildren(...btns(it))}}
-  $('#ups').textContent=n?`Uploading ${n} file${n>1?'s':''} · ${tot?(snt/tot*100).toFixed(0):100}%${spd>1?' · '+fmtSize(spd)+'/s':''}${spd>1?' · '+fmtTime((tot-snt)/spd)+' left':''}`:'Uploads finished';
-  document.title=n?`(${tot?(snt/tot*100).toFixed(0):100}%) Vault`:'Vault'}
- $('#upc').addEventListener('click',()=>{for(let i=Q.length;i--;)if(Q[i].state==='done')Q.splice(i,1);paint()});
- $('#uph').addEventListener('click',e=>{if(e.target.id==='upc')return;const l=$('#upl'),h=l.hidden=!l.hidden;$('#upt').textContent=h?'Show':'Hide'});
- return{add,active,pauseAll:a=>Q.filter(busy).forEach(i=>pause(i,a)),resumeAuto:()=>Q.filter(i=>i.auto).forEach(resume)}})();
-$('#ub').addEventListener('click',()=>$('#fi').click());$('#fi').addEventListener('change',e=>{Uploads.add([...e.target.files]);e.target.value=''});
-let dc=0;addEventListener('dragenter',e=>{if(e.dataTransfer?.types.includes('Files')&&!$('#app').hidden){dc++;$('#drop').hidden=false}});
-addEventListener('dragleave',()=>{if(--dc<=0){dc=0;$('#drop').hidden=true}});addEventListener('dragover',e=>e.preventDefault());
-addEventListener('drop',e=>{e.preventDefault();dc=0;$('#drop').hidden=true;if($('#app').hidden)return;const its=[...(e.dataTransfer.items||[])],ok=[];let skipped=0;
- its.forEach((i,k)=>{const en=i.webkitGetAsEntry?.();if(en?.isDirectory)skipped++;else{const f=e.dataTransfer.files[k];if(f)ok.push(f)}});
- if(!its.length)ok.push(...e.dataTransfer.files);if(skipped)toast('Folders cannot be dropped yet. Drop the files inside instead.');if(ok.length)Uploads.add(ok)});
+<html lang="en">
 
-/* ---------- settings: two-step login, key, share links, activity ---------- */
-$('#setbtn').addEventListener('click',()=>openSettings());$('#setx').addEventListener('click',()=>$('#set').close());
-async function openSettings(){const b=$('#setb');if(!$('#set').open)$('#set').showModal();
- try{const[t,sh,au]=await Promise.all([api('GET','/api/2fa'),api('GET','/api/shares'),api('GET','/api/audit?limit=12')]);const sec=(h,...k)=>el('section',{class:'ss'},el('h3',{},h),...k);
-  b.replaceChildren(
-   sec('Two-step login',el('p',{},t.enabled?`On. Logging in needs your key and a code from your authenticator app. ${t.backupCodesLeft} backup codes left.`:'Off. Turn it on so a stolen key alone is not enough.'),el('button',{class:'btn sm',onclick:t.enabled?disable2fa:enable2fa},t.enabled?'Turn off':'Turn on')),
-   sec('Vault key',el('button',{class:'btn sm',onclick:changeKey},'Change vault key'),' ',el('button',{class:'btn sm dg',onclick:signOutAll},'Sign out all devices')),
-   sec('Share links',...(sh.shares.length?sh.shares.map(x=>el('div',{class:'it'},el('b',{},x.name),el('br'),el('small',{},`expires ${fmtDate(x.expires)} · ${x.downloads}${x.max_downloads?' of '+x.max_downloads:''} downloads `),el('button',{class:'btn sm dg',onclick:async()=>{await api('DELETE','/api/shares/'+x.id).catch(e=>toast(e.message));openSettings()}},'Revoke'))):[el('p',{},'No active links.')])),
-   sec('Recent activity',...au.events.map(e=>el('small',{style:'display:block'},`${fmtDate(e.ts)} · ${e.ev.replace(/_/g,' ')}${e.ip?' · '+e.ip:''}${e.detail?' · '+e.detail:''}`))))}
- catch(e){b.replaceChildren(el('p',{},e.message))}}
-async function enable2fa(){const k=await ask({title:'Turn on two-step login',msg:'Confirm your vault key.',input:'',pw:1,ok:'Continue'});if(!k)return;
- try{const r=await api('POST','/api/2fa/start',{key:k}),inp=el('input',{type:'text',placeholder:'6-digit code',autocomplete:'one-time-code',inputmode:'numeric'});
-  $('#setb').replaceChildren(el('h3',{},'Add this vault to your authenticator app'),el('p',{},'On your phone, tap ',el('a',{href:r.uri},'open in authenticator app'),'. Or add it by hand with this secret (time-based, 6 digits):'),el('p',{},el('b',{},r.secret.match(/.{1,4}/g).join(' '))),el('p',{},'Then type the code the app shows:'),inp,
-   el('p',{},el('button',{class:'btn pri',onclick:async()=>{try{const v=await api('POST','/api/2fa/enable',{code:inp.value});
-    $('#setb').replaceChildren(el('h3',{},'Save your backup codes'),el('p',{},'Each code works once if you lose your phone. Store them somewhere safe. They are not shown again.'),el('pre',{},v.backupCodes.join('\n')),el('button',{class:'btn',onclick:()=>openSettings()},'I saved them'))}catch(e){toast(e.message)}}},'Verify and turn on')))}catch(e){toast(e.message)}}
-async function disable2fa(){const k=await ask({title:'Turn off two-step login',msg:'Confirm your vault key.',input:'',pw:1,ok:'Continue'});if(!k)return;const c=await ask({title:'Turn off two-step login',msg:'Enter a current code or a backup code.',input:'',ok:'Turn off',danger:1});if(!c)return;
- try{await api('POST','/api/2fa/disable',{key:k,code:c});toast('Two-step login is off');openSettings()}catch(e){toast(e.message)}}
-async function changeKey(){const cur=await ask({title:'Change vault key',msg:'Current vault key:',input:'',pw:1,ok:'Next'});if(!cur)return;const nx=await ask({title:'Change vault key',msg:'New vault key (12+ characters). All other devices will be signed out.',input:'',pw:1,ok:'Change key'});if(!nx)return;
- try{await api('POST','/api/change-key',{current:cur,next:nx});toast('Vault key changed')}catch(e){toast(e.message)}}
-async function signOutAll(){if(!await ask({title:'Sign out everywhere?',msg:'Every device, including this one, will need the key again.',ok:'Sign out all',danger:1}))return;await api('POST','/api/logout-all').catch(()=>{});showLock()}
-boot();
-</script></body></html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Vault</title>
+  <style>
+    :root {
+      --bg: #e9edf0;
+      --sf: #fff;
+      --ink: #17212b;
+      --mut: #5b6b7a;
+      --ln: #d3dae0;
+      --ac: #1d5c63;
+      --aci: #fff;
+      --dg: #b3372f;
+      --hv: #f2f5f7;
+      font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif
+    }
+
+    @media(prefers-color-scheme:dark) {
+      :root {
+        --bg: #0f1519;
+        --sf: #161e24;
+        --ink: #e6ecf0;
+        --mut: #8fa1af;
+        --ln: #26323b;
+        --ac: #5fb3b9;
+        --aci: #0b1418;
+        --dg: #ef7a70;
+        --hv: #1b252d
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-variant-numeric: tabular-nums
+    }
+
+    [hidden] {
+      display: none !important
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+      color: inherit
+    }
+
+    button {
+      cursor: pointer
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--ac);
+      outline-offset: 2px
+    }
+
+    .btn {
+      background: var(--sf);
+      border: 1px solid var(--ln);
+      border-radius: 6px;
+      padding: 7px 12px
+    }
+
+    .btn:hover {
+      background: var(--hv)
+    }
+
+    .btn.pri {
+      background: var(--ac);
+      color: var(--aci);
+      border-color: var(--ac);
+      font-weight: 600
+    }
+
+    .btn.dg {
+      color: var(--dg)
+    }
+
+    .btn.sm {
+      padding: 3px 8px;
+      font-size: 13px
+    }
+
+    input[type=text],
+    input[type=password],
+    input[type=search],
+    select {
+      background: var(--sf);
+      border: 1px solid var(--ln);
+      border-radius: 6px;
+      padding: 8px 10px;
+      width: 100%
+    }
+
+    #lock {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px
+    }
+
+    .dial {
+      width: min(380px, 100%);
+      text-align: center
+    }
+
+    .ring {
+      width: 132px;
+      height: 132px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      background: repeating-conic-gradient(var(--mut) 0 1deg, transparent 1deg 15deg);
+      -webkit-mask: radial-gradient(circle, transparent 52px, #000 53px, #000 64px, transparent 65px);
+      mask: radial-gradient(circle, transparent 52px, #000 53px, #000 64px, transparent 65px);
+      position: relative
+    }
+
+    .dial h1 {
+      font: 600 30px Georgia, "Times New Roman", serif;
+      margin: 0 0 4px
+    }
+
+    .dial p {
+      color: var(--mut);
+      margin: 0 0 18px
+    }
+
+    .dial form {
+      display: grid;
+      gap: 10px;
+      text-align: left
+    }
+
+    .err {
+      color: var(--dg);
+      min-height: 1.3em;
+      font-size: 14px
+    }
+
+    header.top {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 16px;
+      background: var(--sf);
+      border-bottom: 1px solid var(--ln);
+      position: sticky;
+      top: 0;
+      z-index: 5
+    }
+
+    header.top b {
+      font: 600 19px Georgia, serif
+    }
+
+    #stats {
+      color: var(--mut);
+      font-size: 13px;
+      margin-left: auto
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 16px 120px
+    }
+
+    .bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 10px
+    }
+
+    .bar .grow {
+      flex: 1;
+      min-width: 160px
+    }
+
+    .crumbs {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin: 6px 0 10px;
+      color: var(--mut)
+    }
+
+    .crumbs button {
+      background: none;
+      border: 0;
+      color: var(--ac);
+      padding: 2px 4px;
+      font-weight: 600
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--sf);
+      border: 1px solid var(--ln);
+      border-radius: 8px;
+      overflow: hidden
+    }
+
+    th,
+    td {
+      padding: 9px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--ln);
+      vertical-align: middle
+    }
+
+    th {
+      font-size: 13px;
+      color: var(--mut);
+      font-weight: 600;
+      white-space: nowrap
+    }
+
+    th button {
+      background: none;
+      border: 0;
+      font-weight: 600;
+      color: inherit;
+      padding: 0
+    }
+
+    tr:last-child td {
+      border-bottom: 0
+    }
+
+    tbody tr:hover {
+      background: var(--hv)
+    }
+
+    .nm {
+      background: none;
+      border: 0;
+      padding: 0;
+      text-align: left;
+      font-weight: 600;
+      max-width: 46ch;
+      overflow-wrap: anywhere
+    }
+
+    .sub {
+      display: none;
+      color: var(--mut);
+      font-size: 12px
+    }
+
+    .ext {
+      display: inline-block;
+      min-width: 3.4em;
+      text-align: center;
+      border: 1px solid var(--ln);
+      border-radius: 4px;
+      font-size: 12px;
+      padding: 1px 4px;
+      color: var(--mut)
+    }
+
+    .act {
+      white-space: nowrap;
+      text-align: right
+    }
+
+    .empty {
+      padding: 40px 16px;
+      text-align: center;
+      color: var(--mut)
+    }
+
+    #sel {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--ac);
+      color: var(--aci);
+      border-radius: 6px;
+      margin-bottom: 10px
+    }
+
+    #sel .btn {
+      color: var(--ink)
+    }
+
+    #up {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      width: min(420px, calc(100vw - 28px));
+      background: var(--sf);
+      border: 1px solid var(--ln);
+      border-radius: 10px;
+      box-shadow: 0 6px 24px #0003;
+      z-index: 9
+    }
+
+    #uph {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 12px;
+      cursor: pointer
+    }
+
+    #uph span {
+      flex: 1;
+      font-weight: 600;
+      font-size: 14px
+    }
+
+    #upl {
+      max-height: 45vh;
+      overflow: auto;
+      border-top: 1px solid var(--ln)
+    }
+
+    .it {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--ln)
+    }
+
+    .it:last-child {
+      border-bottom: 0
+    }
+
+    .it .r {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .it .n {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 14px
+    }
+
+    .it small {
+      color: var(--mut)
+    }
+
+    .it small.err {
+      color: var(--dg)
+    }
+
+    .r2 {
+      display: flex;
+      gap: 6px
+    }
+
+    progress {
+      width: 100%;
+      height: 8px;
+      margin: 6px 0 3px;
+      accent-color: var(--ac)
+    }
+
+    #drop {
+      position: fixed;
+      inset: 0;
+      background: color-mix(in srgb, var(--ac) 82%, transparent);
+      color: var(--aci);
+      display: grid;
+      place-items: center;
+      font: 600 26px Georgia, serif;
+      z-index: 20
+    }
+
+    dialog {
+      border: 1px solid var(--ln);
+      border-radius: 10px;
+      background: var(--sf);
+      color: var(--ink);
+      width: min(400px, 92vw);
+      padding: 18px
+    }
+
+    dialog::backdrop {
+      background: #0008
+    }
+
+    dialog h3 {
+      margin: 0 0 6px
+    }
+
+    dialog p {
+      margin: 0 0 12px;
+      color: var(--mut);
+      overflow-wrap: anywhere
+    }
+
+    dialog .row {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 14px
+    }
+
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 90px;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: var(--bg);
+      padding: 9px 14px;
+      border-radius: 6px;
+      z-index: 30;
+      max-width: 90vw
+    }
+
+    dialog#set {
+      width: min(560px, 94vw);
+      max-height: 88vh;
+      overflow: auto
+    }
+
+    .ss {
+      border-top: 1px solid var(--ln);
+      padding: 12px 0
+    }
+
+    .ss:first-child {
+      border-top: 0
+    }
+
+    .ss h3 {
+      margin: 0 0 6px
+    }
+
+    pre {
+      background: var(--hv);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 15px;
+      user-select: all
+    }
+
+    dialog#set .it {
+      padding: 8px 0
+    }
+
+    @media(max-width:700px) {
+      .act {
+        white-space: normal
+      }
+
+      .act .btn {
+        display: block;
+        margin: 0 0 4px auto
+      }
+
+      .hm {
+        display: none
+      }
+
+      .sub {
+        display: block
+      }
+
+      th,
+      td {
+        padding: 8px 6px
+      }
+
+      #stats {
+        display: none
+      }
+
+      header.top {
+        padding: 8px 12px
+      }
+    }
+
+    @media(prefers-reduced-motion:no-preference) {
+      .ring {
+        animation: t 40s linear infinite
+      }
+
+      @keyframes t {
+        to {
+          transform: rotate(360deg)
+        }
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main id="lock" hidden>
+    <div class="dial">
+      <div class="ring"></div>
+      <h1>Vault</h1>
+      <p id="lp">Enter your vault key.</p>
+      <form id="lf" autocomplete="off"><input type="text" id="code"
+          placeholder="Setup code (shown in the server console)" hidden>
+        <input type="password" id="key" placeholder="Vault key" autocomplete="current-password" required><input
+          type="password" id="key2" placeholder="Repeat vault key" hidden>
+        <input type="text" id="otp" placeholder="6-digit code from your authenticator (or a backup code)"
+          autocomplete="one-time-code" inputmode="numeric" hidden>
+        <button class="btn pri" id="lb">Unlock</button>
+        <div class="err" id="le" role="alert"></div>
+      </form>
+    </div>
+  </main>
+  <div id="app" hidden>
+    <header class="top"><b>Vault - by JS</b><span id="stats"></span><button class="btn sm" id="setbtn">Settings</button><button
+        class="btn sm" id="lockbtn">Lock now</button></header>
+    <div class="wrap">
+      <div class="bar"><input type="search" id="q" class="grow" placeholder="Search all files by name"><button
+          class="btn" id="nf">New folder</button><button class="btn pri" id="ub">Upload files</button><input type="file"
+          id="fi" multiple hidden></div>
+      <div class="crumbs" id="crumbs"></div>
+      <div id="sel" hidden><span id="sc"></span><button class="btn sm" id="sz">Download as ZIP</button><button
+          class="btn sm" id="sd">Delete selected</button><button class="btn sm" id="sx">Clear</button></div>
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="all" aria-label="Select all"></th>
+            <th><button data-s="name">Name</button></th>
+            <th class="hm"><button data-s="ext">Type</button></th>
+            <th><button data-s="size">Size</button></th>
+            <th class="hm"><button data-s="date">Added</button></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty" id="empty" hidden>Nothing here yet. Drop files anywhere on this page, or choose Upload files.
+      </div>
+    </div>
+    <aside id="up" hidden>
+      <div id="uph"><span id="ups"></span><button class="btn sm" id="upc">Clear finished</button><button class="btn sm"
+          id="upt" aria-label="Show or hide uploads">Hide</button></div>
+      <div id="upl"></div>
+    </aside>
+  </div>
+  <dialog id="set">
+    <div id="setb"></div>
+    <div class="row"><button class="btn" id="setx" type="button">Close</button></div>
+  </dialog>
+  <div id="drop" hidden>Drop files to upload</div>
+  <div id="toast" hidden></div>
+  <dialog id="dlg">
+    <form method="dialog" id="df">
+      <h3 id="dt"></h3>
+      <p id="dm"></p><input type="text" id="di" hidden>
+      <div class="row"><button class="btn" value="x" type="button" id="dx">Cancel</button><button class="btn pri"
+          id="dok"></button></div>
+    </form>
+  </dialog>
+  <script>
+    'use strict';
+    const $ = s => document.querySelector(s), sleep = ms => new Promise(r => setTimeout(r, ms));
+    const el = (t, p = {}, ...k) => {const e = document.createElement(t); for (const [a, v] of Object.entries(p)) {if (a === 'class') e.className = v; else if (a.startsWith('on')) e.addEventListener(a.slice(2), v); else if (v !== false && v != null) e.setAttribute(a, v === true ? '' : v)} for (const c of k.flat()) if (c != null) e.append(c); return e};
+    const fmtSize = n => {if (n < 1024) return n + ' B'; const u = ['KB', 'MB', 'GB', 'TB']; let i = -1; do {n /= 1024; i++} while (n >= 1024 && i < 3); return n.toFixed(n < 10 ? 2 : 1) + ' ' + u[i]};
+    const fmtDate = t => new Date(t).toLocaleString([], {dateStyle: 'medium', timeStyle: 'short'});
+    const fmtTime = s => !isFinite(s) || s <= 0 ? '' : s < 60 ? Math.ceil(s) + 's' : s < 3600 ? Math.ceil(s / 60) + ' min' : (s / 3600).toFixed(1) + ' h';
+    let toastT; const toast = m => {const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 4000)};
+    async function api(method, url, body) {
+      const o = {method, headers: {'x-vault': '1'}}; if (body !== undefined) {o.headers['content-type'] = 'application/json'; o.body = JSON.stringify(body)}
+      const r = await fetch(url, o); let j = null; try {j = await r.json()} catch { }
+      if (r.status === 401 && url !== '/api/login' && url !== '/api/setup') showLock();
+      if (!r.ok) throw Object.assign(new Error(j?.error || 'Request failed (' + r.status + ')'), {status: r.status, data: j}); return j
+    }
+    function ask({title, msg = '', input, ok = 'OK', danger, pw}) {
+      return new Promise(res => {
+        const d = $('#dlg'), i = $('#di'); $('#dt').textContent = title; $('#dm').textContent = msg; $('#dok').textContent = ok; $('#dok').className = 'btn ' + (danger ? 'dg' : 'pri');
+        i.type = pw ? 'password' : 'text'; i.hidden = input === undefined; if (input !== undefined) i.value = input; let v = null;
+        $('#df').onsubmit = e => {e.preventDefault(); v = input === undefined ? true : i.value; d.close()}; $('#dx').onclick = () => d.close(); d.onclose = () => res(v); d.showModal(); if (!i.hidden) i.select()
+      })
+    }
+    /* ---------- lock / setup ---------- */
+    let CFGS = {idle: 900}, mode = 'login';
+    async function boot() {const s = await fetch('/api/state').then(r => r.json()); CFGS.idle = s.idleSeconds; mode = s.setup ? 'login' : 'setup'; s.authed ? enter() : showLock()}
+    function showLock() {
+      $('#app').hidden = true; $('#lock').hidden = false; const s = mode === 'setup'; $('#code').hidden = $('#key2').hidden = !s; $('#key2').required = s;
+      $('#lp').textContent = s ? 'This is not your vault, bro. 💀' : 'Enter your vault key.'; $('#lb').textContent = s ? 'Create vault' : 'Unlock';
+      $('#key').autocomplete = s ? 'new-password' : 'current-password'; $('#key').value = $('#key2').value = $('#otp').value = ''; $('#otp').hidden = true; $('#le').textContent = ''; $('#key').focus(); Uploads.pauseAll(true); if ($('#set').open) $('#set').close()
+    }
+    $('#lf').addEventListener('submit', async e => {
+      e.preventDefault(); const b = $('#lb'), er = $('#le'); er.textContent = ''; b.disabled = true;
+      try {
+        if (mode === 'setup') {if ($('#key').value !== $('#key2').value) throw new Error('The two keys do not match.'); await api('POST', '/api/setup', {code: $('#code').value, key: $('#key').value}); mode = 'login'}
+        else await api('POST', '/api/login', {key: $('#key').value, code: $('#otp').hidden ? undefined : $('#otp').value}); $('#key').value = $('#key2').value = $('#otp').value = ''; enter()
+      }
+      catch (x) {er.textContent = x.message; if (x.data?.need2fa) {$('#otp').hidden = false; $('#otp').focus()} } finally {b.disabled = false}
+    });
+    let appOn = false;
+    function enter() {$('#lock').hidden = true; $('#app').hidden = false; if (!appOn) {appOn = true; load();} else load(); Uploads.resumeAuto()}
+    $('#lockbtn').addEventListener('click', async () => {if (Uploads.active() && !await ask({title: 'Uploads are running', msg: 'Locking now pauses them. You can resume after unlocking.', ok: 'Lock anyway'})) return; await api('POST', '/api/logout').catch(() => { }); showLock()});
+    let lastAct = Date.now();['pointerdown', 'keydown', 'touchstart', 'mousemove'].forEach(ev => addEventListener(ev, () => lastAct = Date.now(), {passive: true}));
+    setInterval(() => {if (!$('#app').hidden && !Uploads.active() && Date.now() - lastAct > CFGS.idle * 1000 - 5000) {api('POST', '/api/logout').catch(() => { }); showLock()} }, 5000);
+    setInterval(() => {if (!$('#app').hidden && Uploads.active()) fetch('/api/state').catch(() => { })}, 60000);
+    /* ---------- file browser ---------- */
+    const S = {folder: null, sort: 'date', dir: 'desc', q: '', data: null, sel: new Set()};
+    async function load() {
+      try {
+        const p = new URLSearchParams({sort: S.sort, dir: S.dir}); if (S.folder) p.set('folder', S.folder); if (S.q) p.set('q', S.q);
+        S.data = await api('GET', '/api/list?' + p); S.sel.clear(); draw(); const st = await api('GET', '/api/stats');
+        $('#stats').textContent = `${st.files} files · ${fmtSize(st.bytes)} stored` + (st.diskFree != null ? ` · ${fmtSize(st.diskFree)} free` : '')
+      }
+      catch (e) {if (e.status === 404) {S.folder = null; load()} else if (e.status !== 401) toast(e.message)}
+    }
+    function draw() {
+      const d = S.data, tb = $('#rows'); tb.replaceChildren();
+      const cr = $('#crumbs'); cr.replaceChildren(S.q ? el('span', {}, `Search results for "${S.q}"`) : el('button', {onclick: () => go(null)}, 'All files'));
+      if (!S.q) d.breadcrumbs.forEach(b => cr.append('/', el('button', {onclick: () => go(b.id)}, b.name)));
+      for (const f of d.folders) tb.append(row('folder', f)); for (const f of d.files) tb.append(row('file', f));
+      $('#empty').hidden = d.folders.length + d.files.length > 0; $('#empty').textContent = S.q ? 'No matches.' : 'Nothing here yet. Drop files anywhere on this page, or choose Upload files.'; selUI()
+    }
+    function row(kind, f) {
+      const key = kind + ':' + f.id, isF = kind === 'folder';
+      const cb = el('input', {type: 'checkbox', 'aria-label': 'Select ' + f.name, onchange: e => {e.target.checked ? S.sel.add(key) : S.sel.delete(key); selUI()}}); cb.dataset.k = key;
+      const nm = el('button', {class: 'nm', onclick: () => isF ? go(f.id) : dl(f)}, (isF ? '📁 ' : '') + f.name);
+      const sub = el('div', {class: 'sub'}, isF ? `${f.items} items` : `${f.ext || 'file'} · ${fmtSize(f.size)} · ${fmtDate(f.created)}`);
+      const acts = el('td', {class: 'act'}, isF ? null : el('button', {class: 'btn sm', onclick: () => dl(f)}, 'Download'), ' ', isF ? null : el('button', {class: 'btn sm', onclick: () => share(f)}, 'Share'), ' ', el('button', {class: 'btn sm', onclick: () => rename(kind, f)}, 'Rename'), ' ', el('button', {class: 'btn sm dg', onclick: () => del([key], f.name)}, 'Delete'));
+      return el('tr', {}, el('td', {}, cb), el('td', {}, nm, sub), el('td', {class: 'hm'}, isF ? '' : el('span', {class: 'ext', title: f.mime}, f.ext || '—')), el('td', {}, isF ? '' : fmtSize(f.size)), el('td', {class: 'hm'}, isF ? '' : fmtDate(f.created)), acts)
+    }
+    function selUI() {$('#sel').hidden = !S.sel.size; $('#sc').textContent = S.sel.size + ' selected'; document.querySelectorAll('#rows input').forEach(c => c.checked = S.sel.has(c.dataset.k)); $('#all').checked = S.sel.size > 0 && S.sel.size === document.querySelectorAll('#rows input').length}
+    $('#all').addEventListener('change', e => {document.querySelectorAll('#rows input').forEach(c => e.target.checked ? S.sel.add(c.dataset.k) : S.sel.delete(c.dataset.k)); selUI()});
+    $('#sz').addEventListener('click', () => {
+      const k = [...S.sel], q = new URLSearchParams({files: k.filter(x => x.startsWith('file:')).map(x => x.slice(5)).join(','), folders: k.filter(x => x.startsWith('folder:')).map(x => x.slice(7)).join(',')});
+      const a = el('a', {href: '/api/zip?' + q}); document.body.append(a); a.click(); a.remove()
+    });
+    async function share(f) {
+      const h = await ask({title: 'Share "' + f.name + '"', msg: 'Anyone who has the link can download this one file, without a key. For how many hours should the link work? (1 to 720)', input: '24', ok: 'Create link'}); if (!h) return;
+      try {const r = await api('POST', `/api/files/${f.id}/share`, {hours: Number(h)}); if (await ask({title: 'Your link is ready', msg: 'Copy it now. For safety it cannot be shown again. You can revoke it any time in Settings.', input: r.url, ok: 'Copy link'})) navigator.clipboard?.writeText(r.url).then(() => toast('Link copied')).catch(() => toast('Select the link and copy it by hand'))} catch (e) {toast(e.message)}
+    }
+    $('#sx').addEventListener('click', () => {S.sel.clear(); selUI()}); $('#sd').addEventListener('click', () => del([...S.sel], S.sel.size + ' items'));
+    const go = id => {S.folder = id; S.q = ''; $('#q').value = ''; load()};
+    const dl = f => {const a = el('a', {href: `/api/files/${f.id}/download`, download: f.name}); document.body.append(a); a.click(); a.remove()};
+    async function del(keys, label) {
+      if (!await ask({title: 'Delete permanently?', msg: `${label} will be erased from the server. Folders include everything inside. This cannot be undone.`, ok: 'Delete', danger: 1})) return;
+      try {await api('POST', '/api/delete', {files: keys.filter(k => k.startsWith('file:')).map(k => k.slice(5)), folders: keys.filter(k => k.startsWith('folder:')).map(k => k.slice(7))}); toast('Deleted'); load()} catch (e) {toast(e.message)}
+    }
+    async function rename(kind, f) {const n = await ask({title: 'Rename', input: f.name, ok: 'Rename'}); if (!n || n === f.name) return; try {await api('PATCH', `/api/${kind}s/${f.id}`, {name: n}); load()} catch (e) {toast(e.message)} }
+    $('#nf').addEventListener('click', async () => {const n = await ask({title: 'New folder', input: '', ok: 'Create folder'}); if (!n) return; try {await api('POST', '/api/folders', {name: n, parent: S.folder}); load()} catch (e) {toast(e.message)} });
+    document.querySelectorAll('th button').forEach(b => b.addEventListener('click', () => {const k = b.dataset.s; S.dir = S.sort === k && S.dir === 'asc' ? 'desc' : 'asc'; S.sort = k; load()}));
+    let qt; $('#q').addEventListener('input', e => {clearTimeout(qt); qt = setTimeout(() => {S.q = e.target.value.trim(); load()}, 250)});
+    /* ---------- upload engine: queue, 3 parallel chunks, retry, pause/resume, progress ---------- */
+    const Uploads = (() => {
+      const Q = []; let id = 0, raf = 0, wl = null, lastTick = Date.now(); const FILES = 2, PAR = 3;
+      const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+      const sentOf = it => it.done + Object.values(it.part).reduce((a, b) => a + b, 0);
+      const busy = it => it.state === 'uploading' || it.state === 'verifying';
+      const active = () => Q.some(i => busy(i) || i.state === 'queued');
+      function add(files) {
+        let n = 0; for (const f of files) {Q.push({id: ++id, file: f, folder: S.folder, state: 'queued', done: 0, part: {}, speed: 0, last: 0, xhrs: new Set(), paused: false, auto: false, note: '', err: ''}); n++}
+        if (n && 'Notification' in window && Notification.permission === 'default') Notification.requestPermission(); pump(); paint()
+      }
+      function pump() {
+        let run = Q.filter(busy).length; for (const it of Q) if (run < FILES && it.state === 'queued' && !it.paused) {run++; go1(it)}
+        if (active() && !wl && navigator.wakeLock) navigator.wakeLock.request('screen').then(w => {wl = w; w.addEventListener('release', () => wl = null)}).catch(() => { });
+        if (!active() && wl) {wl.release(); wl = null}
+      }
+      function xhrPut(it, n, buf, hash) {
+        return new Promise((res, rej) => {
+          const x = new XMLHttpRequest(); it.xhrs.add(x); x.open('PUT', `/api/uploads/${it.up.id}/chunks/${n}`); x.setRequestHeader('x-vault', '1'); if (hash) x.setRequestHeader('x-chunk-sha256', hash);
+          x.upload.onprogress = e => {it.part[n] = e.loaded; paint()}; x.onload = () => {
+            it.xhrs.delete(x); if (x.status === 200) return res(); let m = 'Upload failed (' + x.status + ')'; try {m = JSON.parse(x.responseText).error || m} catch { }
+            if (x.status === 401) showLock(); rej(Object.assign(new Error(m), {fatal: x.status !== 422 && x.status < 500 && x.status !== 429 && x.status !== 408}))
+          };
+          x.onerror = x.ontimeout = () => {it.xhrs.delete(x); rej(new Error('Network problem'))}; x.onabort = () => {it.xhrs.delete(x); rej(Object.assign(new Error('aborted'), {aborted: true}))}; x.send(buf)
+        })
+      }
+      async function chunk(it, n) {
+        const s = n * it.cs, e = Math.min(it.file.size, s + it.cs), buf = await it.file.slice(s, e).arrayBuffer(); let h = null; if (crypto.subtle) h = hex(await crypto.subtle.digest('SHA-256', buf));
+        for (let a = 0; ; a++) {
+          try {await xhrPut(it, n, buf, h); it.done += e - s; delete it.part[n]; it.note = ''; return } catch (x) {
+            it.part[n] = 0; if (it.paused || it.cancelled || x.aborted) throw Object.assign(x, {aborted: true}); if (x.fatal || a >= 7) throw x;
+            it.note = `Connection problem, retrying (${a + 1}/7)…`; paint(); await sleep(Math.min(30000, 1000 * 2 ** a)); while (!navigator.onLine && !it.paused) await sleep(1000)
+          }
+        }
+      }
+      async function go1(it) {
+        it.state = 'uploading'; it.err = ''; it.last = Date.now(); paint();
+        try {
+          const up = await api('POST', '/api/uploads', {name: it.file.name, size: it.file.size, folder: it.folder, fingerprint: `${it.file.name}|${it.file.size}|${it.file.lastModified}`});
+          it.up = up; it.cs = up.chunkSize; it.part = {}; it.done = 0; const have = new Set(up.received), todo = [];
+          for (let n = 0; n < up.total; n++) {if (have.has(n)) it.done += Math.min(it.cs, it.file.size - n * it.cs); else todo.push(n)}
+          if (up.resumed && have.size) it.note = `Resuming (${have.size}/${up.total} parts already on server)`; let fatal = null;
+          const w = async () => {while (todo.length && !fatal && !it.paused && !it.cancelled) {const n = todo.shift(); try {await chunk(it, n)} catch (x) {if (x.aborted) {todo.unshift(n); return } fatal = x; return } } };
+          await Promise.all(Array.from({length: PAR}, w));
+          if (it.cancelled) return; if (it.paused) {it.state = 'paused'; return } if (fatal) throw fatal;
+          it.state = 'verifying'; it.note = 'Checking integrity on the server…'; paint(); await api('POST', `/api/uploads/${up.id}/complete`, {}); it.state = 'done'; it.note = ''; it.done = it.file.size; it.part = {}
+        } catch (x) {if (!it.cancelled && !it.paused) {it.state = 'error'; it.err = x.message} else if (it.paused && it.state !== 'done') it.state = 'paused'}
+        finally {pump(); paint(); if (it.state === 'done') refresh(); if (!active() && Q.some(i => i.state === 'done')) {document.title = 'Vault'; if (document.hidden && 'Notification' in window && Notification.permission === 'granted') new Notification('Vault: uploads finished')} }
+      }
+      let rt; const refresh = () => {clearTimeout(rt); rt = setTimeout(() => {if (!$("#app").hidden) load()}, 200)};
+      function pause(it, auto) {it.paused = true; it.auto = !!auto; if (busy(it)) {it.state = 'paused';[...it.xhrs].forEach(x => x.abort())} else if (it.state === 'queued') it.state = 'paused'; paint()}
+      function resume(it) {it.paused = false; it.auto = false; if (it.state === 'paused' || it.state === 'error') it.state = 'queued'; pump(); paint()}
+      function cancel(it) {it.cancelled = true;[...it.xhrs].forEach(x => x.abort()); if (it.up && it.state !== 'done') api('DELETE', '/api/uploads/' + it.up.id).catch(() => { }); Q.splice(Q.indexOf(it), 1); pump(); paint()}
+      setInterval(() => {const now = Date.now(), dt = (now - lastTick) / 1000; lastTick = now; for (const it of Q) {if (it.state === 'uploading') {const s = sentOf(it); it.speed = it.speed ? it.speed * .6 + ((s - (it.prev || 0)) / dt) * .4 : (s - (it.prev || 0)) / dt; it.prev = s} else {it.speed = 0; it.prev = sentOf(it)} } if (active()) paint()}, 1000);
+      addEventListener('offline', () => {Q.filter(busy).forEach(i => pause(i, true)); toast('You are offline. Uploads are paused and resume automatically.')});
+      addEventListener('online', () => {Q.filter(i => i.auto).forEach(resume); toast('Back online. Resuming uploads.')});
+      addEventListener('beforeunload', e => {if (active()) {e.preventDefault(); e.returnValue = ''} });
+      function paint() {if (!raf) raf = setTimeout(() => {raf = 0; paintNow()}, 200)}
+      const nodes = new Map();
+      function btns(it) {
+        const b = []; if (it.state === 'uploading' || it.state === 'queued') b.push(el('button', {class: 'btn sm', onclick: () => pause(it)}, 'Pause'));
+        if (it.state === 'paused') b.push(el('button', {class: 'btn sm', onclick: () => resume(it)}, 'Resume')); if (it.state === 'error') b.push(el('button', {class: 'btn sm', onclick: () => resume(it)}, 'Retry'));
+        if (it.state !== 'done') b.push(el('button', {class: 'btn sm dg', onclick: () => cancel(it)}, 'Cancel')); return b
+      }
+      function paintNow() {
+        $('#up').hidden = !Q.length; const L = $('#upl'); for (const [k, nd] of nodes) if (!Q.some(i => i.id === k)) {nd.root.remove(); nodes.delete(k)}
+        let tot = 0, snt = 0, spd = 0, n = 0;
+        for (const it of Q) {
+          let nd = nodes.get(it.id);
+          if (!nd) {
+            nd = {root: el('div', {class: 'it'}), nm: el('span', {class: 'n', title: it.file.name}, it.file.name), act: el('span', {class: 'r2'}), pr: el('progress', {max: 100, value: 0, 'aria-label': 'Upload progress for ' + it.file.name}), sm: el('small')};
+            nd.root.append(el('div', {class: 'r'}, nd.nm, nd.act), nd.pr, nd.sm); L.append(nd.root); nodes.set(it.id, nd)
+          }
+          const s = sentOf(it), pct = it.file.size ? Math.min(100, s / it.file.size * 100) : 100; if (busy(it) || it.state === 'queued') {tot += it.file.size; snt += s; spd += it.speed; n++}
+          const st = {queued: 'Waiting…', uploading: `${pct.toFixed(0)}% · ${fmtSize(s)} of ${fmtSize(it.file.size)}${it.speed > 1 ? ` · ${fmtSize(it.speed)}/s · ${fmtTime((it.file.size - s) / it.speed)} left` : ''}${it.note ? ' · ' + it.note : ''}`, verifying: it.note, paused: `Paused at ${pct.toFixed(0)}%`, done: `Done · ${fmtSize(it.file.size)}`, error: it.err}[it.state];
+          nd.pr.value = it.state === 'done' ? 100 : pct; nd.sm.textContent = st; nd.sm.className = it.state === 'error' ? 'err' : '';
+          if (nd.st !== it.state) {nd.st = it.state; nd.act.replaceChildren(...btns(it))}
+        }
+        $('#ups').textContent = n ? `Uploading ${n} file${n > 1 ? 's' : ''} · ${tot ? (snt / tot * 100).toFixed(0) : 100}%${spd > 1 ? ' · ' + fmtSize(spd) + '/s' : ''}${spd > 1 ? ' · ' + fmtTime((tot - snt) / spd) + ' left' : ''}` : 'Uploads finished';
+        document.title = n ? `(${tot ? (snt / tot * 100).toFixed(0) : 100}%) Vault` : 'Vault'
+      }
+      $('#upc').addEventListener('click', () => {for (let i = Q.length; i--;)if (Q[i].state === 'done') Q.splice(i, 1); paint()});
+      $('#uph').addEventListener('click', e => {if (e.target.id === 'upc') return; const l = $('#upl'), h = l.hidden = !l.hidden; $('#upt').textContent = h ? 'Show' : 'Hide'});
+      return {add, active, pauseAll: a => Q.filter(busy).forEach(i => pause(i, a)), resumeAuto: () => Q.filter(i => i.auto).forEach(resume)}
+    })();
+    $('#ub').addEventListener('click', () => $('#fi').click()); $('#fi').addEventListener('change', e => {Uploads.add([...e.target.files]); e.target.value = ''});
+    let dc = 0; addEventListener('dragenter', e => {if (e.dataTransfer?.types.includes('Files') && !$('#app').hidden) {dc++; $('#drop').hidden = false} });
+    addEventListener('dragleave', () => {if (--dc <= 0) {dc = 0; $('#drop').hidden = true} }); addEventListener('dragover', e => e.preventDefault());
+    addEventListener('drop', e => {
+      e.preventDefault(); dc = 0; $('#drop').hidden = true; if ($('#app').hidden) return; const its = [...(e.dataTransfer.items || [])], ok = []; let skipped = 0;
+      its.forEach((i, k) => {const en = i.webkitGetAsEntry?.(); if (en?.isDirectory) skipped++; else {const f = e.dataTransfer.files[k]; if (f) ok.push(f)} });
+      if (!its.length) ok.push(...e.dataTransfer.files); if (skipped) toast('Folders cannot be dropped yet. Drop the files inside instead.'); if (ok.length) Uploads.add(ok)
+    });
+
+    /* ---------- settings: two-step login, key, share links, activity ---------- */
+    $('#setbtn').addEventListener('click', () => openSettings()); $('#setx').addEventListener('click', () => $('#set').close());
+    async function openSettings() {
+      const b = $('#setb'); if (!$('#set').open) $('#set').showModal();
+      try {
+        const [t, sh, au] = await Promise.all([api('GET', '/api/2fa'), api('GET', '/api/shares'), api('GET', '/api/audit?limit=12')]); const sec = (h, ...k) => el('section', {class: 'ss'}, el('h3', {}, h), ...k);
+        b.replaceChildren(
+          sec('Two-step login', el('p', {}, t.enabled ? `On. Logging in needs your key and a code from your authenticator app. ${t.backupCodesLeft} backup codes left.` : 'Off. Turn it on so a stolen key alone is not enough.'), el('button', {class: 'btn sm', onclick: t.enabled ? disable2fa : enable2fa}, t.enabled ? 'Turn off' : 'Turn on')),
+          sec('Vault key', el('button', {class: 'btn sm', onclick: changeKey}, 'Change vault key'), ' ', el('button', {class: 'btn sm dg', onclick: signOutAll}, 'Sign out all devices')),
+          sec('Share links', ...(sh.shares.length ? sh.shares.map(x => el('div', {class: 'it'}, el('b', {}, x.name), el('br'), el('small', {}, `expires ${fmtDate(x.expires)} · ${x.downloads}${x.max_downloads ? ' of ' + x.max_downloads : ''} downloads `), el('button', {class: 'btn sm dg', onclick: async () => {await api('DELETE', '/api/shares/' + x.id).catch(e => toast(e.message)); openSettings()}}, 'Revoke'))) : [el('p', {}, 'No active links.')])),
+          sec('Recent activity', ...au.events.map(e => el('small', {style: 'display:block'}, `${fmtDate(e.ts)} · ${e.ev.replace(/_/g, ' ')}${e.ip ? ' · ' + e.ip : ''}${e.detail ? ' · ' + e.detail : ''}`))))
+      }
+      catch (e) {b.replaceChildren(el('p', {}, e.message))}
+    }
+    async function enable2fa() {
+      const k = await ask({title: 'Turn on two-step login', msg: 'Confirm your vault key.', input: '', pw: 1, ok: 'Continue'}); if (!k) return;
+      try {
+        const r = await api('POST', '/api/2fa/start', {key: k}), inp = el('input', {type: 'text', placeholder: '6-digit code', autocomplete: 'one-time-code', inputmode: 'numeric'});
+        $('#setb').replaceChildren(el('h3', {}, 'Add this vault to your authenticator app'), el('p', {}, 'On your phone, tap ', el('a', {href: r.uri}, 'open in authenticator app'), '. Or add it by hand with this secret (time-based, 6 digits):'), el('p', {}, el('b', {}, r.secret.match(/.{1,4}/g).join(' '))), el('p', {}, 'Then type the code the app shows:'), inp,
+          el('p', {}, el('button', {
+            class: 'btn pri', onclick: async () => {
+              try {
+                const v = await api('POST', '/api/2fa/enable', {code: inp.value});
+                $('#setb').replaceChildren(el('h3', {}, 'Save your backup codes'), el('p', {}, 'Each code works once if you lose your phone. Store them somewhere safe. They are not shown again.'), el('pre', {}, v.backupCodes.join('\n')), el('button', {class: 'btn', onclick: () => openSettings()}, 'I saved them'))
+              } catch (e) {toast(e.message)}
+            }
+          }, 'Verify and turn on')))
+      } catch (e) {toast(e.message)}
+    }
+    async function disable2fa() {
+      const k = await ask({title: 'Turn off two-step login', msg: 'Confirm your vault key.', input: '', pw: 1, ok: 'Continue'}); if (!k) return; const c = await ask({title: 'Turn off two-step login', msg: 'Enter a current code or a backup code.', input: '', ok: 'Turn off', danger: 1}); if (!c) return;
+      try {await api('POST', '/api/2fa/disable', {key: k, code: c}); toast('Two-step login is off'); openSettings()} catch (e) {toast(e.message)}
+    }
+    async function changeKey() {
+      const cur = await ask({title: 'Change vault key', msg: 'Current vault key:', input: '', pw: 1, ok: 'Next'}); if (!cur) return; const nx = await ask({title: 'Change vault key', msg: 'New vault key (12+ characters). All other devices will be signed out.', input: '', pw: 1, ok: 'Change key'}); if (!nx) return;
+      try {await api('POST', '/api/change-key', {current: cur, next: nx}); toast('Vault key changed')} catch (e) {toast(e.message)}
+    }
+    async function signOutAll() {if (!await ask({title: 'Sign out everywhere?', msg: 'Every device, including this one, will need the key again.', ok: 'Sign out all', danger: 1})) return; await api('POST', '/api/logout-all').catch(() => { }); showLock()}
+    boot();
+  </script>
+</body>
+
+</html>
