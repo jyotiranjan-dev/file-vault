@@ -1,6 +1,0 @@
-{$DOMAIN} {
-	# Files are encrypted binary data, so no compression. Large uploads/downloads are streamed, never buffered.
-	reverse_proxy vault:3000 {
-		flush_interval -1
-	}
-}
