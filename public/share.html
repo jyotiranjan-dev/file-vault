@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="robots" content="noindex"><title>Shared files</title>
+<style>
+:root{--bg:#e9edf0;--sf:#fff;--ink:#17212b;--mut:#5b6b7a;--ln:#d3dae0;--ac:#1d5c63;--aci:#fff;--dg:#b3372f;--hv:#f2f5f7;font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1519;--sf:#161e24;--ink:#e6ecf0;--mut:#8fa1af;--ln:#26323b;--ac:#5fb3b9;--aci:#0b1418;--dg:#ef7a70;--hv:#1b252d}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);min-height:100vh;display:grid;place-items:start center;padding:6vh 16px}
+main{width:min(560px,100%)}h1{font:600 28px Georgia,"Times New Roman",serif;margin:0 0 4px}.mut{color:var(--mut);margin:0 0 18px;font-size:14px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:12px;overflow:hidden}.f{display:flex;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--ln)}.f:last-child{border-bottom:0}
+.f .n{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}.f small{display:block;color:var(--mut);font-weight:400}
+a.btn{display:inline-block;background:var(--sf);color:var(--ink);border:1px solid var(--ln);border-radius:8px;padding:8px 14px;text-decoration:none;font-weight:600;white-space:nowrap}
+a.btn:hover{background:var(--hv)}a.pri{background:var(--ac);color:var(--aci);border-color:var(--ac)}a.pri:hover{background:var(--ac);opacity:.88}a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.all{margin-top:14px;text-align:center}.all a{display:block}.note{margin-top:18px;color:var(--mut);font-size:13px;text-align:center}.err{padding:24px 16px;text-align:center;color:var(--dg)}
+</style></head><body><main>
+<h1>Files shared with you</h1><p class="mut" id="meta">Loading…</p>
+<div class="card" id="list" hidden></div><div class="all" id="all" hidden></div>
+<p class="note">Only the files listed here are shared. Nothing else can be reached through this link.</p>
+</main>
+<script>
+'use strict';
+const t=location.pathname.split('/')[2]||'',$=s=>document.querySelector(s);
+const fmtSize=n=>{if(n<1024)return n+' B';const u=['KB','MB','GB','TB'];let i=-1;do{n/=1024;i++}while(n>=1024&&i<3);return n.toFixed(n<10?2:1)+' '+u[i]};
+const el=(tag,p={},...k)=>{const e=document.createElement(tag);for(const[a,v]of Object.entries(p))e.setAttribute(a,v);for(const c of k)e.append(c);return e};
+fetch('/s/'+encodeURIComponent(t)+'/info').then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'This link does not exist or has expired.');return j}).then(j=>{
+ const when=new Date(j.expires).toLocaleString([],{dateStyle:'medium',timeStyle:'short'});
+ $('#meta').textContent=`This link works until ${when}`+(j.remaining!=null?` · ${j.remaining} download${j.remaining===1?'':'s'} left`:'')+'.';
+ const L=$('#list');L.hidden=false;
+ for(const f of j.files)L.append(el('div',{class:'f'},el('div',{class:'n'},f.name,el('small',{},fmtSize(f.size))),el('a',{class:'btn',href:`/s/${encodeURIComponent(t)}/f/${f.id}`,download:f.name},'Download')));
+ if(j.files.length>1){$('#all').hidden=false;$('#all').append(el('a',{class:'btn pri',href:`/s/${encodeURIComponent(t)}/zip`},`Download all ${j.files.length} files as ZIP`))}
+}).catch(e=>{$('#meta').textContent='';const L=$('#list');L.hidden=false;L.append(el('div',{class:'err'},e.message))});
+</script></body></html>
